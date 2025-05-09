@@ -13,6 +13,7 @@ import Checklists from './pages/Checklists';
 import ChecklistDetail from './pages/ChecklistDetail';
 import Profile from './pages/Profile';
 import NotFound from './pages/NotFound';
+import DebugPanel from './components/DebugPanel';
 
 function App() {
   useEffect(() => {
@@ -46,6 +47,9 @@ function App() {
         {/* 404 route */}
         <Route path="*" element={<NotFound />} />
       </Routes>
+      
+      {/* Debug panel - only in development */}
+      {process.env.NODE_ENV === 'development' && <DebugPanel />}
     </>
   );
 }

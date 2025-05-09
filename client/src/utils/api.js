@@ -1,5 +1,6 @@
 import axios from 'axios';
 
+// Create API instance
 const api = axios.create({
   baseURL: process.env.REACT_APP_API_URL || '',
   headers: {
@@ -56,9 +57,151 @@ const mockData = {
   checklists: []
 };
 
-// Add a request interceptor
+// Simple mock implementation
+if (isMockEnabled) {
+  console.log('Setting up mock API');
+  
+  // Override the post method for mock mode
+  const originalPost = api.post;
+  api.post = function(url, data, config) {
+    console.log('Mock API post:', url, data);
+    
+    // Handle auth endpoints
+    if (url === '/api/auth/register') {
+      console.log('Mock API: Handling registration');
+      
+      // Create mock user from request data
+      const mockUser = {
+        _id: 'mock_user_id_' + Date.now(),
+        name: data.name || 'New User',
+        email: data.email || 'user@example.com',
+        role: 'user',
+        createdAt: new Date().toISOString(),
+        lastLogin: new Date().toISOString()
+      };
+      
+      // Update mock data
+      mockData.user = mockUser;
+      
+      // Return success response
+      return Promise.resolve({
+        data: {
+          success: true,
+          token: 'mock_token_' + Date.now(),
+          user: mockUser
+        }
+      });
+    }
+    
+    if (url === '/api/auth/login') {
+      console.log('Mock API: Handling login');
+      
+      // Return success response with mock user
+      return Promise.resolve({
+        data: {
+          success: true,
+          token: 'mock_token_' + Date.now(),
+          user: mockData.user
+        }
+      });
+    }
+    
+    if (url === '/api/auth/logout') {
+      console.log('Mock API: Handling logout');
+      
+      // Return success response
+      return Promise.resolve({
+        data: {
+          success: true,
+          message: 'Logged out successfully'
+        }
+      });
+    }
+    
+    // For any other endpoints, pass through to original implementation
+    console.log('Mock API: Passing through to original implementation');
+    return originalPost(url, data, config);
+  };
+  
+  // Override the get method for mock mode
+  const originalGet = api.get;
+  api.get = function(url, config) {
+    console.log('Mock API get:', url);
+    
+    // Handle auth endpoints
+    if (url === '/api/auth/me') {
+      console.log('Mock API: Handling get current user');
+      
+      // Return success response with mock user
+      return Promise.resolve({
+        data: {
+          success: true,
+          data: mockData.user
+        }
+      });
+    }
+    
+    // Handle template endpoints
+    if (url === '/api/templates') {
+      console.log('Mock API: Handling get all templates');
+      
+      // Return success response with mock templates
+      return Promise.resolve({
+        data: {
+          success: true,
+          count: mockData.templates.length,
+          data: mockData.templates
+        }
+      });
+    }
+    
+    if (url.startsWith('/api/templates/')) {
+      console.log('Mock API: Handling get template detail');
+      
+      // Get template ID from URL
+      const templateId = url.split('/').pop();
+      
+      // Find template by ID or return first template
+      const template = mockData.templates.find(t => t._id === templateId) || mockData.templates[0];
+      
+      // Return success response with template
+      return Promise.resolve({
+        data: {
+          success: true,
+          data: template
+        }
+      });
+    }
+    
+    // Handle checklist endpoints
+    if (url === '/api/checklists') {
+      console.log('Mock API: Handling get all checklists');
+      
+      // Return success response with mock checklists
+      return Promise.resolve({
+        data: {
+          success: true,
+          count: mockData.checklists.length,
+          data: mockData.checklists
+        }
+      });
+    }
+    
+    // For any other endpoints, pass through to original implementation
+    console.log('Mock API: Passing through to original implementation');
+    return originalGet(url, config);
+  };
+}
+
+// Add a request interceptor for logging
 api.interceptors.request.use(
   (config) => {
+    // Safely access method and URL
+    const method = config.method ? config.method.toUpperCase() : 'UNKNOWN';
+    const url = config.url || 'unknown-url';
+    
+    console.log(`API Request: ${method} ${url}`);
+    
     // Get token from localStorage
     const token = localStorage.getItem('token');
     
@@ -67,153 +210,25 @@ api.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
     
-    // If mock is enabled, intercept the request
-    if (isMockEnabled) {
-      const { method, url } = config;
-      console.log(`Mock API intercepted: ${method} ${url}`);
-      
-      // Handle auth endpoints
-      if (url.includes('/api/auth/login') && method === 'post') {
-        console.log('Mock API: Processing login request');
-        return mockResponse(config, 200, {
-          success: true,
-          token: 'mock_token',
-          user: mockData.user
-        });
-      }
-      
-      if (url.includes('/api/auth/register') && method === 'post') {
-        console.log('Mock API: Processing registration request', config.data);
-        
-        // Parse request data if it's a string
-        let userData;
-        try {
-          userData = typeof config.data === 'string' ? JSON.parse(config.data) : config.data;
-        } catch (error) {
-          console.error('Error parsing registration data:', error);
-          userData = config.data || {};
-        }
-        
-        console.log('Parsed user data:', userData);
-        
-        // Create a mock user
-        const mockUser = { 
-          _id: 'mock_user_id_' + Date.now(),
-          name: userData.name || 'New User',
-          email: userData.email || 'user@example.com',
-          role: 'user',
-          createdAt: new Date().toISOString(),
-          lastLogin: new Date().toISOString()
-        };
-        
-        // Update the mock data with the new user
-        mockData.user = mockUser;
-        
-        console.log('Created mock user:', mockUser);
-        
-        // Return a successful response
-        return mockResponse(config, 201, {
-          success: true,
-          token: 'mock_token_' + Date.now(),
-          user: mockUser
-        });
-      }
-      
-      if (url.includes('/api/auth/me') && method === 'get') {
-        return mockResponse(config, 200, {
-          success: true,
-          data: mockData.user
-        });
-      }
-      
-      // Handle template endpoints
-      if (url.includes('/api/templates') && method === 'get' && !url.includes('/api/templates/')) {
-        return mockResponse(config, 200, {
-          success: true,
-          count: mockData.templates.length,
-          data: mockData.templates
-        });
-      }
-      
-      if (url.match(/\/api\/templates\/[^/]+$/) && method === 'get') {
-        const templateId = url.split('/').pop();
-        const template = mockData.templates.find(t => t._id === templateId) || mockData.templates[0];
-        return mockResponse(config, 200, {
-          success: true,
-          data: template
-        });
-      }
-      
-      // Handle checklist endpoints
-      if (url.includes('/api/checklists') && method === 'get' && !url.includes('/api/checklists/')) {
-        return mockResponse(config, 200, {
-          success: true,
-          count: mockData.checklists.length,
-          data: mockData.checklists
-        });
-      }
-      
-      if (url.includes('/api/checklists') && method === 'post') {
-        const requestData = typeof config.data === 'string' ? JSON.parse(config.data) : config.data;
-        const newChecklist = {
-          _id: `checklist_${mockData.checklists.length + 1}`,
-          ...requestData,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          createdBy: mockData.user._id,
-          items: [],
-          progress: {
-            notStarted: 0,
-            inProgress: 0,
-            done: 0,
-            notApplicable: 0,
-            total: 0
-          }
-        };
-        
-        // If baseTemplateId is provided, copy items from template
-        if (requestData.baseTemplateId) {
-          const template = mockData.templates.find(t => t._id === requestData.baseTemplateId) || mockData.templates[0];
-          if (template) {
-            newChecklist.items = template.items.map((item, index) => ({
-              ...item,
-              _id: `checklist_item_${index + 1}`,
-              status: 'Not Started',
-              order: index
-            }));
-            
-            newChecklist.progress = {
-              notStarted: newChecklist.items.length,
-              inProgress: 0,
-              done: 0,
-              notApplicable: 0,
-              total: newChecklist.items.length
-            };
-          }
-        }
-        
-        mockData.checklists.push(newChecklist);
-        
-        return mockResponse(config, 201, {
-          success: true,
-          data: newChecklist
-        });
-      }
-    }
-    
     return config;
   },
   (error) => {
+    console.error('API Request Error:', error);
     return Promise.reject(error);
   }
 );
 
-// Add a response interceptor
+// Add a response interceptor for logging
 api.interceptors.response.use(
   (response) => {
+    // Safely access URL
+    const url = response.config?.url || 'unknown-url';
+    console.log(`API Response: ${response.status} ${url}`);
     return response;
   },
   (error) => {
+    console.error('API Response Error:', error);
+    
     // Handle 401 Unauthorized errors
     if (error.response && error.response.status === 401) {
       // Remove token from localStorage
@@ -228,22 +243,5 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-
-// Helper function to create mock responses
-function mockResponse(request, status, data) {
-  console.log('Creating mock response:', { status, data });
-  
-  // Create a proper axios response-like object
-  const response = {
-    status,
-    statusText: status === 200 ? 'OK' : 'Created',
-    headers: request.headers,
-    config: request,
-    data
-  };
-  
-  // Return a resolved promise with the response
-  return Promise.resolve(response);
-}
 
 export default api; 

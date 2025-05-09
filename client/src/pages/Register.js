@@ -4,11 +4,36 @@ import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import toast from 'react-hot-toast';
 import { useAuth } from '../hooks/useAuth';
+import api from '../utils/api'; // Import API directly for testing
 
 const Register = () => {
   const { register } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [debugInfo, setDebugInfo] = useState(null);
+
+  // Debug function to test mock API directly
+  const testMockApi = async () => {
+    try {
+      setDebugInfo("Testing mock API...");
+      const testData = {
+        name: "Test User",
+        email: "test@example.com",
+        password: "password123"
+      };
+      
+      // Make direct API call
+      const response = await api.post('/api/auth/register', testData);
+      console.log("Direct API test response:", response);
+      setDebugInfo(JSON.stringify(response.data, null, 2));
+      
+      toast.success("API test completed. Check console and debug info below.");
+    } catch (error) {
+      console.error("API test error:", error);
+      setDebugInfo(error.message);
+      toast.error("API test failed. See console for details.");
+    }
+  };
 
   const formik = useFormik({
     initialValues: {
@@ -173,6 +198,21 @@ const Register = () => {
         <Link to="/login" className="text-primary-600 hover:text-primary-500">
           Sign in
         </Link>
+      </div>
+      
+      {/* Debug section */}
+      <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <button 
+          onClick={testMockApi}
+          className="text-xs bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 py-1 rounded"
+        >
+          Test Mock API
+        </button>
+        {debugInfo && (
+          <div className="mt-2 p-2 bg-gray-100 dark:bg-gray-800 rounded text-xs overflow-auto max-h-40">
+            <pre>{debugInfo}</pre>
+          </div>
+        )}
       </div>
     </div>
   );

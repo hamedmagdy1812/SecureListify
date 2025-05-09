@@ -9,6 +9,20 @@ const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [debugInfo, setDebugInfo] = useState(null);
+
+  // Debug function to check environment variables
+  const checkEnvVars = () => {
+    const envInfo = {
+      REACT_APP_USE_MOCK: process.env.REACT_APP_USE_MOCK,
+      REACT_APP_API_URL: process.env.REACT_APP_API_URL,
+      NODE_ENV: process.env.NODE_ENV,
+    };
+    
+    console.log('Environment variables:', envInfo);
+    setDebugInfo(JSON.stringify(envInfo, null, 2));
+    toast.success('Environment variables checked. See debug info below.');
+  };
 
   const formik = useFormik({
     initialValues: {
@@ -116,6 +130,21 @@ const Login = () => {
         <Link to="/register" className="text-primary-600 hover:text-primary-500">
           Sign up
         </Link>
+      </div>
+      
+      {/* Debug section */}
+      <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <button 
+          onClick={checkEnvVars}
+          className="text-xs bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 py-1 rounded"
+        >
+          Check Environment Variables
+        </button>
+        {debugInfo && (
+          <div className="mt-2 p-2 bg-gray-100 dark:bg-gray-800 rounded text-xs overflow-auto max-h-40">
+            <pre>{debugInfo}</pre>
+          </div>
+        )}
       </div>
     </div>
   );
