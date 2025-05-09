@@ -95,7 +95,10 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       if (isAuthenticated) {
-        await api.post('/api/auth/logout');
+        // Only call logout API if not using mock data
+        if (process.env.REACT_APP_USE_MOCK !== 'true') {
+          await api.post('/api/auth/logout');
+        }
       }
     } catch (error) {
       console.error('Logout API call failed:', error);
