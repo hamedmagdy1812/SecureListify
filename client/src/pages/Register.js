@@ -34,16 +34,20 @@ const Register = () => {
     onSubmit: async (values) => {
       setIsLoading(true);
       try {
+        console.log('Submitting registration form with values:', values);
         const result = await register(values.name, values.email, values.password);
+        console.log('Registration result:', result);
+        
         if (result.success) {
           toast.success('Registration successful!');
           navigate('/dashboard');
         } else {
-          toast.error(result.message);
+          toast.error(result.message || 'Registration failed');
+          console.error('Registration failed with message:', result.message);
         }
       } catch (error) {
-        toast.error('An error occurred during registration');
-        console.error(error);
+        console.error('Unexpected error during registration:', error);
+        toast.error('An unexpected error occurred during registration');
       } finally {
         setIsLoading(false);
       }

@@ -50,7 +50,7 @@ api.interceptors.response.use(
 const isMockEnabled = process.env.REACT_APP_USE_MOCK === 'true';
 
 if (isMockEnabled) {
-  console.log('Using mock API');
+  console.log('Using mock API - Mock mode is enabled');
   
   // Mock data
   const mockData = {
@@ -103,9 +103,11 @@ if (isMockEnabled) {
     if (!isMockEnabled) return request;
     
     const { method, url } = request;
+    console.log(`Mock API intercepted: ${method} ${url}`);
     
     // Handle auth endpoints
     if (url.includes('/api/auth/login') && method === 'post') {
+      console.log('Mock API: Processing login request');
       return mockResponse(request, 200, {
         success: true,
         token: 'mock_token',
@@ -114,10 +116,17 @@ if (isMockEnabled) {
     }
     
     if (url.includes('/api/auth/register') && method === 'post') {
+      console.log('Mock API: Processing registration request', request.data);
+      const mockUser = { 
+        ...mockData.user, 
+        name: request.data.name, 
+        email: request.data.email 
+      };
+      
       return mockResponse(request, 201, {
         success: true,
         token: 'mock_token',
-        user: { ...mockData.user, ...request.data }
+        user: mockUser
       });
     }
     
@@ -207,13 +216,19 @@ if (isMockEnabled) {
 
 // Helper function to create mock responses
 function mockResponse(request, status, data) {
-  return Promise.resolve({
+  console.log('Creating mock response:', { status, data });
+  
+  // Create a proper axios response-like object
+  const response = {
     status,
-    data,
+    statusText: status === 200 ? 'OK' : 'Created',
     headers: request.headers,
     config: request,
-    statusText: status === 200 ? 'OK' : 'Created'
-  });
+    data
+  };
+  
+  // Return a resolved promise with the response
+  return Promise.resolve(response);
 }
 
 export default api; 

@@ -67,7 +67,10 @@ export const AuthProvider = ({ children }) => {
   // Register function
   const register = async (name, email, password) => {
     try {
+      console.log('Registering user:', { name, email });
       const response = await api.post('/api/auth/register', { name, email, password });
+      console.log('Registration response:', response.data);
+      
       const { token, user } = response.data;
       
       // Save token to localStorage
@@ -84,6 +87,15 @@ export const AuthProvider = ({ children }) => {
       return { success: true };
     } catch (error) {
       console.error('Registration failed:', error);
+      
+      // For debugging
+      if (error.response) {
+        console.error('Error response data:', error.response.data);
+        console.error('Error response status:', error.response.status);
+      } else if (error.request) {
+        console.error('Error request:', error.request);
+      }
+      
       return {
         success: false,
         message: error.response?.data?.error?.message || 'Registration failed'
