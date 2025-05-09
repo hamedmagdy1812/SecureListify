@@ -2,6 +2,7 @@ import React, { createContext, useState, useEffect } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import api from '../utils/api';
 
+// Create context
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -9,38 +10,62 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-
-  // Check if token is valid on mount
+  
+  const isMockEnabled = process.env.REACT_APP_USE_MOCK === 'true';
+  
   useEffect(() => {
-    const verifyToken = async () => {
-      if (!token) {
-        setIsLoading(false);
-        return;
-      }
-
+    const initializeAuth = async () => {
       try {
-        // Set the token in axios headers
-        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        console.log('Initializing auth, mock mode:', isMockEnabled);
         
-        // Fetch user data
-        const response = await api.get('/api/auth/me');
-        setUser(response.data.data);
-        setIsAuthenticated(true);
+        // Check if token exists
+        const storedToken = localStorage.getItem('token');
+        if (!storedToken) {
+          setIsLoading(false);
+          return;
+        }
+        
+        // Check if token is expired (except for mock token)
+        if (!isMockEnabled && isTokenExpired(storedToken)) {
+          console.log('Token is expired, logging out');
+          await logout();
+          setIsLoading(false);
+          return;
+        }
+        
+        // Set token in axios headers
+        api.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
+        
+        // Get current user
+        try {
+          const response = await api.get('/api/auth/me');
+          setUser(response.data.data || response.data.user);
+          setToken(storedToken);
+          setIsAuthenticated(true);
+        } catch (error) {
+          console.error('Failed to get user data:', error);
+          // Only clear auth if not in mock mode or if error is not 401
+          if (!isMockEnabled || (error.response && error.response.status !== 401)) {
+            await logout();
+          }
+        }
       } catch (error) {
-        console.error('Token verification failed:', error);
-        logout();
+        console.error('Auth initialization error:', error);
       } finally {
         setIsLoading(false);
       }
     };
-
-    verifyToken();
-  }, [token]);
-
+    
+    initializeAuth();
+  }, []);
+  
   // Login function
   const login = async (email, password) => {
     try {
+      console.log('Logging in user:', email);
       const response = await api.post('/api/auth/login', { email, password });
+      console.log('Login response:', response.data);
+      
       const { token, user } = response.data;
       
       // Save token to localStorage
@@ -59,11 +84,11 @@ export const AuthProvider = ({ children }) => {
       console.error('Login failed:', error);
       return {
         success: false,
-        message: error.response?.data?.error?.message || 'Login failed'
+        message: error.response?.data?.error?.message || 'Invalid credentials'
       };
     }
   };
-
+  
   // Register function
   const register = async (name, email, password) => {
     try {
@@ -102,13 +127,13 @@ export const AuthProvider = ({ children }) => {
       };
     }
   };
-
+  
   // Logout function
   const logout = async () => {
     try {
       if (isAuthenticated) {
         // Only call logout API if not using mock data
-        if (process.env.REACT_APP_USE_MOCK !== 'true') {
+        if (!isMockEnabled) {
           await api.post('/api/auth/logout');
         }
       }
@@ -127,7 +152,7 @@ export const AuthProvider = ({ children }) => {
       setIsAuthenticated(false);
     }
   };
-
+  
   // Check if token is expired
   const isTokenExpired = (token) => {
     try {
@@ -137,7 +162,7 @@ export const AuthProvider = ({ children }) => {
       return true;
     }
   };
-
+  
   return (
     <AuthContext.Provider
       value={{
