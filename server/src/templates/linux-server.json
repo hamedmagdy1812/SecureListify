@@ -1,0 +1,98 @@
+{
+  "name": "Linux Server Hardening",
+  "description": "Security checklist for hardening Linux servers based on CIS benchmarks",
+  "systemType": "Linux Server",
+  "isPublic": true,
+  "items": [
+    {
+      "title": "Ensure filesystem integrity is regularly checked",
+      "description": "Implement and run file integrity monitoring tools regularly to ensure the integrity of critical system files.",
+      "riskRating": "High",
+      "referenceUrl": "https://www.cisecurity.org/benchmark/linux",
+      "category": "File System",
+      "tags": ["integrity", "monitoring"],
+      "complianceFrameworks": ["CIS", "NIST SP 800-53"]
+    },
+    {
+      "title": "Ensure permissions on /etc/passwd are configured",
+      "description": "The /etc/passwd file contains user account information and should have appropriate permissions to prevent unauthorized access.",
+      "riskRating": "Medium",
+      "referenceUrl": "https://www.cisecurity.org/benchmark/linux",
+      "category": "File Permissions",
+      "tags": ["permissions", "users"],
+      "complianceFrameworks": ["CIS", "NIST SP 800-53"]
+    },
+    {
+      "title": "Ensure SSH root login is disabled",
+      "description": "Root login should be disabled to prevent direct root access via SSH.",
+      "riskRating": "Critical",
+      "referenceUrl": "https://www.cisecurity.org/benchmark/linux",
+      "category": "SSH Configuration",
+      "tags": ["ssh", "root", "access"],
+      "complianceFrameworks": ["CIS", "NIST SP 800-53", "ISO 27001"]
+    },
+    {
+      "title": "Ensure password expiration is 90 days or less",
+      "description": "Password expiration should be set to ensure that passwords are changed regularly.",
+      "riskRating": "Medium",
+      "referenceUrl": "https://www.cisecurity.org/benchmark/linux",
+      "category": "Password Policy",
+      "tags": ["password", "expiration"],
+      "complianceFrameworks": ["CIS", "NIST SP 800-53", "PCI DSS"]
+    },
+    {
+      "title": "Ensure firewall is enabled and properly configured",
+      "description": "A properly configured firewall is essential for system security.",
+      "riskRating": "High",
+      "referenceUrl": "https://www.cisecurity.org/benchmark/linux",
+      "category": "Network Security",
+      "tags": ["firewall", "network"],
+      "complianceFrameworks": ["CIS", "NIST SP 800-53", "ISO 27001"]
+    },
+    {
+      "title": "Ensure unnecessary services are disabled",
+      "description": "Disable all services that are not required to reduce the attack surface.",
+      "riskRating": "Medium",
+      "referenceUrl": "https://www.cisecurity.org/benchmark/linux",
+      "category": "Services",
+      "tags": ["services", "attack surface"],
+      "complianceFrameworks": ["CIS", "NIST SP 800-53"]
+    },
+    {
+      "title": "Ensure auditd is installed and enabled",
+      "description": "The audit daemon should be enabled to collect and store audit information.",
+      "riskRating": "High",
+      "referenceUrl": "https://www.cisecurity.org/benchmark/linux",
+      "category": "Logging and Auditing",
+      "tags": ["audit", "logging"],
+      "complianceFrameworks": ["CIS", "NIST SP 800-53", "SOC 2"]
+    },
+    {
+      "title": "Ensure core dumps are restricted",
+      "description": "Core dumps can contain sensitive information and should be restricted.",
+      "riskRating": "Low",
+      "referenceUrl": "https://www.cisecurity.org/benchmark/linux",
+      "category": "System Configuration",
+      "tags": ["core dumps", "memory"],
+      "complianceFrameworks": ["CIS", "NIST SP 800-53"]
+    },
+    {
+      "title": "Ensure SELinux or AppArmor is installed and enabled",
+      "description": "Mandatory Access Control systems like SELinux or AppArmor provide an additional layer of security.",
+      "riskRating": "High",
+      "referenceUrl": "https://www.cisecurity.org/benchmark/linux",
+      "category": "Access Control",
+      "tags": ["selinux", "apparmor", "mac"],
+      "complianceFrameworks": ["CIS", "NIST SP 800-53"]
+    },
+    {
+      "title": "Ensure updates are installed regularly",
+      "description": "Regular updates ensure that security patches are applied promptly.",
+      "riskRating": "Critical",
+      "referenceUrl": "https://www.cisecurity.org/benchmark/linux",
+      "category": "Patching",
+      "tags": ["updates", "patching"],
+      "complianceFrameworks": ["CIS", "NIST SP 800-53", "ISO 27001", "SOC 2"]
+    }
+  ]
+} 

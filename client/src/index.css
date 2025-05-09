@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-white;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-md font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors;
+  }
+
+  .btn-primary {
+    @apply bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500;
+  }
+
+  .btn-secondary {
+    @apply bg-secondary-600 text-white hover:bg-secondary-700 focus:ring-secondary-500;
+  }
+
+  .btn-danger {
+    @apply bg-danger-600 text-white hover:bg-danger-700 focus:ring-danger-500;
+  }
+
+  .btn-success {
+    @apply bg-success-600 text-white hover:bg-success-700 focus:ring-success-500;
+  }
+
+  .btn-warning {
+    @apply bg-warning-600 text-white hover:bg-warning-700 focus:ring-warning-500;
+  }
+
+  .btn-outline {
+    @apply border bg-transparent hover:bg-gray-50 dark:hover:bg-gray-800;
+  }
+
+  .card {
+    @apply bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden;
+  }
+
+  .input {
+    @apply block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white;
+  }
+
+  .label {
+    @apply block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1;
+  }
+  
+  /* Dropdown menu */
+  .dropdown {
+    @apply relative inline-block;
+  }
+  
+  .dropdown:hover .dropdown-menu {
+    @apply block;
+  }
+} 
