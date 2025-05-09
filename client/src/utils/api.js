@@ -84,16 +84,37 @@ api.interceptors.request.use(
       
       if (url.includes('/api/auth/register') && method === 'post') {
         console.log('Mock API: Processing registration request', config.data);
-        const userData = typeof config.data === 'string' ? JSON.parse(config.data) : config.data;
+        
+        // Parse request data if it's a string
+        let userData;
+        try {
+          userData = typeof config.data === 'string' ? JSON.parse(config.data) : config.data;
+        } catch (error) {
+          console.error('Error parsing registration data:', error);
+          userData = config.data || {};
+        }
+        
+        console.log('Parsed user data:', userData);
+        
+        // Create a mock user
         const mockUser = { 
-          ...mockData.user, 
-          name: userData.name, 
-          email: userData.email 
+          _id: 'mock_user_id_' + Date.now(),
+          name: userData.name || 'New User',
+          email: userData.email || 'user@example.com',
+          role: 'user',
+          createdAt: new Date().toISOString(),
+          lastLogin: new Date().toISOString()
         };
         
+        // Update the mock data with the new user
+        mockData.user = mockUser;
+        
+        console.log('Created mock user:', mockUser);
+        
+        // Return a successful response
         return mockResponse(config, 201, {
           success: true,
-          token: 'mock_token',
+          token: 'mock_token_' + Date.now(),
           user: mockUser
         });
       }

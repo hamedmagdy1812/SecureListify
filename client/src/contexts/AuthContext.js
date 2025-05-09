@@ -93,8 +93,23 @@ export const AuthProvider = ({ children }) => {
   const register = async (name, email, password) => {
     try {
       console.log('Registering user:', { name, email });
+      
+      // Clear any existing token
+      localStorage.removeItem('token');
+      delete api.defaults.headers.common['Authorization'];
+      
+      // Make the registration request
       const response = await api.post('/api/auth/register', { name, email, password });
       console.log('Registration response:', response.data);
+      
+      // Check if the response has the expected format
+      if (!response.data || !response.data.token || !response.data.user) {
+        console.error('Invalid registration response format:', response.data);
+        return {
+          success: false,
+          message: 'Invalid response from server'
+        };
+      }
       
       const { token, user } = response.data;
       
